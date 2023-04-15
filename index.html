@@ -173,24 +173,34 @@
     .sub-sections h3 {
       margin-top: 0;
     }
-    .about-content {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 30px;
-    }
+    .left-side, .right-side {
+  width: 50%;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
 
-    .separator {
-      width: 1px;
-      height: 100%;
-      background-color: rgba(34, 31, 31, 0.5);
-    }
+.separator {
+  width: 1px;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.2);
+  margin: 0 20px;
+}
 
-    .section-content {
-      width: 80%;
-      margin-left: auto;
-      margin-right: auto;
-    }
+.profile-pic {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  margin: 20px auto;
+}
+
+.personal-info {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  line-height: 1.6;
+}
   </style>
 </head>
 
@@ -221,22 +231,24 @@
   </header>
   <section id="about-me">
     <h2>About me</h2>
-    <div class="about-content">
-      <div class="personal-info">
-        <img src="/images/foto1.jpeg" alt="João Pedro Lavor" class="profile-picture">
-        <h3>Personal Information</h3>
-        <p><b> Name:</b> João Pedro Lavor</p>
-        <p><b>Date of birth:</b> 12 Jun 1996</p>
-        <p><b>Address:</b> Recife, PE</p>
-        <p><b>Nationality:</b> Brazilian</p>
-        <p><b>Email:</b> joao_amorim@stacktecnologias.com.br</p>
+    <div class="section-content">
+      <div class="left-side">
+        <h3>Objective</h3>
+        <p> <!-- Insira o texto do objetivo aqui --> </p>
+  
+        <h3>What I do</h3>
+        <p> <!-- Insira o texto do "What I do" aqui --> </p>
       </div>
       <div class="separator"></div>
-      <div class="sub-sections">
-        <h3>Objective</h3>
-        <!-- Conteúdo da subseção Objective -->
-        <h3>What I do</h3>
-        <!-- Conteúdo da subseção What I do -->
+      <div class="right-side">
+        <img src="/path/to/your/image.jpg" alt="João Pedro Lavor" class="profile-pic">
+        <ul class="personal-info">
+          <li>Name: João Pedro Lavor</li>
+          <li>Date of birth: 12 Jun 1996</li>
+          <li>Address: Recife, PE</li>
+          <li>Nationality: Brazilian</li>
+          <li>Email: joao_amorim@stacktecnologias.com.br</li>
+        </ul>
       </div>
     </div>
   </section>
