@@ -153,6 +153,27 @@
     section {
       padding: 60px 0;
     }
+
+    .about-content {
+      display: flex;
+      gap: 30px;
+    }
+
+    .profile-picture {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .sub-sections {
+      flex-grow: 1;
+    }
+
+    .sub-sections h3 {
+      margin-top: 0;
+    }
+
   </style>
 </head>
 
@@ -183,7 +204,23 @@
   </header>
   <section id="about-me">
     <h2>About me</h2>
-    <!-- Conteúdo da seção About me -->
+    <div class="about-content">
+      <div class="personal-info">
+        <img src="/images/foto1.jpeg" alt="João Pedro Lavor" class="profile-picture">
+        <h3>Personal Information</h3>
+        <p>Name: João Pedro Lavor</p>
+        <p>Date of birth: 12 Jun 1996</p>
+        <p>Address: Recife, PE</p>
+        <p>Nationality: Brazilian</p>
+        <p>Email: joao_amorim@stacktecnologias.com.br</p>
+      </div>
+      <div class="sub-sections">
+        <h3>Objective</h3>
+        <!-- Conteúdo da subseção Objective -->
+        <h3>What I do</h3>
+        <!-- Conteúdo da subseção What I do -->
+      </div>
+    </div>
   </section>
 
   <section id="resume">
