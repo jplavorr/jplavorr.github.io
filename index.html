@@ -84,7 +84,8 @@
       cursor: pointer;
     }
 
-    nav a:hover {
+    nav a:hover,
+    nav a.active {
       color: #3498db;
     }
 
@@ -111,7 +112,7 @@
   </div>
   <header>
     <nav>
-      <a href="#home">Home</a>
+      <a href="#home" class="active">Home</a>
       <a href="#about-me">About me</a>
       <a href="#resume">Resume</a>
       <a href="#projects">Projects</a>
@@ -143,6 +144,25 @@
     <h2>Contact</h2>
     <!-- Conteúdo da seção Contact -->
   </section>
+
+  <script>
+    const navLinks = document.querySelectorAll("nav a");
+
+    navLinks.forEach(link => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        navLinks.forEach(link => link.classList.remove("active"));
+        e.target.classList.add("active");
+
+        const section = document.querySelector(e.target.getAttribute("href"));
+        window.scrollTo({
+          top: section.offsetTop - 60,
+          behavior: "smooth"
+        });
+      });
+    });
+  </script>
+
 </body>
 
 </html>
