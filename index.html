@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +11,10 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
+      color: #333;
+    }
+
+    .background-image {
       background-image: url('/images/capa.jpg');
       background-size: cover;
       background-position: center;
@@ -17,28 +22,33 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
-      color: #FFF;
     }
+
     .container {
       text-align: center;
+      color: #FFF;
     }
+
     h1 {
-        font-size: 5rem;
-        margin-bottom: 10px;
-        background: linear-gradient(to right, #8e44ad, #3498db);
-        -webkit-background-clip: text;
-        color: transparent;
-        display: inline;
+      font-size: 5rem;
+      margin-bottom: 10px;
+      background: linear-gradient(to right, #8e44ad, #3498db);
+      -webkit-background-clip: text;
+      color: transparent;
+      display: inline;
     }
+
     p {
       font-size: 1.2rem;
       margin-bottom: 20px;
     }
+
     .links {
       display: flex;
       justify-content: center;
       align-items: center;
     }
+
     .links a {
       display: inline-block;
       width: 50px;
@@ -51,20 +61,87 @@
       margin: 0 10px;
       border-radius: 25%;
     }
+
+    header {
+      background-color: white;
+      padding: 20px 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid #eaeaea;
+    }
+
+    nav {
+      display: flex;
+      justify-content: flex-start;
+      gap: 30px;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: #333;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    nav a:hover {
+      color: #3498db;
+    }
+
+    section {
+      padding: 60px 0;
+    }
   </style>
 </head>
+
 <body>
-  <div class="container">
-    <h1>João Pedro Lavor</h1>
-    <p>A Data Scientist Professional and Researcher <br> trying to study and develop projects in Machine Learning and Deep Learning.<br>
+  <div class="background-image">
+    <div class="container">
+      <h1>João Pedro Lavor</h1>
+      <p>A Data Scientist Professional and Researcher <br> trying to study and develop projects in Machine Learning and Deep Learning.<br>
         Feel free to contact me.</p>
-    <div class="links">
-      <a href="https://www.linkedin.com/in/joão-pedro-lavor-65162312b/" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i></a>
-      <a href="https://www.instagram.com/jplavorr" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i></a>
-      <a href="https://www.youtube.com/playlist?list=PL2I77nSp6CT8EKcrL0bmmaBoWGadmU_-H" target="_blank" rel="noopener noreferrer"><i class="fab fa-youtube"></i></a>
-      <a href="https://medium.com/@jplavorr" target="_blank" rel="noopener noreferrer"><i class="fab fa-medium"></i></a>
-      <a href="https://github.com/jplavorr" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
+      <div class="links">
+        <a href="https://www.linkedin.com/in/joão-pedro-lavor-65162312b/" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i></a>
+        <a href="https://www.instagram.com/jplavorr" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i></a>
+        <a href="https://www.youtube.com/playlist?list=PL2I77nSp6CT8EKcrL0bmmaBoWGadmU_-H" target="_blank" rel="noopener noreferrer"><i class="fab fa-youtube"></i></a>
+        <a href="https://medium.com/@jplavorr" target="_blank" rel="noopener noreferrer"><i class="fab fa-medium"></i></a>
+        <a href="https://github.com/jplavorr" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
       </div>
     </div>
-  </body>
-  </html>
+  </div>
+  <header>
+    <nav>
+      <a href="#about-me">About me</a>
+      <a href="#resume">Resume</a>
+      <a href="#projects">Projects</a>
+      <a href="#skills">Skills</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+  <section id="about-me">
+    <h2>About me</h2>
+    <!-- Conteúdo da seção About me -->
+  </section>
+
+  <section id="resume">
+    <h2>Resume</h2>
+    <!-- Conteúdo da seção Resume -->
+  </section>
+
+  <section id="projects">
+    <h2>Projects</h2>
+    <!-- Conteúdo da seção Projects -->
+  </section>
+
+  <section id="skills">
+    <h2>Skills</h2>
+    <!-- Conteúdo da seção Skills -->
+  </section>
+
+  <section id="contact">
+    <h2>Contact</h2>
+    <!-- Conteúdo da seção Contact -->
+  </section>
+</body>
+
+</html>
