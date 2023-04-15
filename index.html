@@ -100,6 +100,38 @@
       color: #012b35;
       margin-bottom: 40px;
     }
+    section h2 {
+      position: relative;
+      /* outros estilos existentes */
+    }
+
+    section h2::before,
+    section h2::after {
+      content: "";
+      position: absolute;
+      bottom: -20px;
+      display: inline-block;
+      height: 1px;
+      width: 40%;
+      background-color: lightgray;
+    }
+
+    section h2::before {
+      left: 0;
+    }
+
+    section h2::after {
+      right: 0;
+    }
+
+    section h2::before:after {
+      content: "<>";
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: lightgray;
+    }
     nav {
       display: flex;
       justify-content: flex-start;
