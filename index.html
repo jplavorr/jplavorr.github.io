@@ -14,7 +14,7 @@
     color: #333;
     }
 
-    .background-image {
+    .background-image::before {
     position: relative;
     background-image: url('/images/capa.jpg');
     background-size: cover;
@@ -23,16 +23,13 @@
     justify-content: center;
     align-items: center;
     height: 100vh;
-    }
-
-    .background-image::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.3); /* Altere o valor de 0.3 para controlar a transparência */
+    background-color: rgba(0, 0, 0, 0.1); /* Altere o valor de 0.3 para controlar a transparência */
     z-index: -1;
     }
 
