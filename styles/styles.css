@@ -308,22 +308,22 @@ section {
   transition: all 0.4s ease-in-out;
   width: 60%;
 }
-.about-stats .progress-bars .progress-bar .progress-con .progress .html {
+.about-stats .progress-bars .progress-bar .progress-con .progress .python {
   width: 80%;
 }
-.about-stats .progress-bars .progress-bar .progress-con .progress .css {
+.about-stats .progress-bars .progress-bar .progress-con .progress .r {
   width: 35%;
 }
-.about-stats .progress-bars .progress-bar .progress-con .progress .js {
+.about-stats .progress-bars .progress-bar .progress-con .progress .statistic {
   width: 75%;
 }
-.about-stats .progress-bars .progress-bar .progress-con .progress .react {
+.about-stats .progress-bars .progress-bar .progress-con .progress .machinelearning {
   width: 70%;
 }
-.about-stats .progress-bars .progress-bar .progress-con .progress .node {
+.about-stats .progress-bars .progress-bar .progress-con .progress .deeplearing {
   width: 20%;
 }
-.about-stats .progress-bars .progress-bar .progress-con .progress .python {
+.about-stats .progress-bars .progress-bar .progress-con .progress .cloud {
   width: 70%;
 }
 
