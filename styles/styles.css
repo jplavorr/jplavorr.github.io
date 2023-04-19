@@ -962,33 +962,3 @@ section {
 }
 
 /*# sourceMappingURL=styles.css.map */
-.circular-progress-bar {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.progress-bar {
-  position: relative;
-  width: 150px;
-  height: 150px;
-  background-color: #e5e5e5;
-  border-radius: 50%;
-  margin: 20px 0;
-}
-
-.progress-bar-fill {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 50%;
-  height: 100%;
-  background-color: #1abc9c;
-  border-radius: 50%;
-  transition: all 1s;
-}
-
-.progress-bar-label {
-  font-size: 1.5rem;
-  text-align: center;
-}
