@@ -312,16 +312,16 @@ section {
   width: 80%;
 }
 .about-stats .progress-bars .progress-bar .progress-con .progress .r {
-  width: 35%;
+  width: 45%;
 }
 .about-stats .progress-bars .progress-bar .progress-con .progress .statistic {
-  width: 75%;
+  width: 80%;
 }
 .about-stats .progress-bars .progress-bar .progress-con .progress .machinelearning {
-  width: 70%;
+  width: 90%;
 }
 .about-stats .progress-bars .progress-bar .progress-con .progress .deeplearing {
-  width: 20%;
+  width: 30%;
 }
 .about-stats .progress-bars .progress-bar .progress-con .progress .cloud {
   width: 70%;
