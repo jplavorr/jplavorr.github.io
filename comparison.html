@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bola de Finsler vs Círculo Euclidiano</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #333;
+            text-align: center;
+        }
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        label {
+            font-weight: bold;
+        }
+        input[type="number"], input[type="range"] {
+            width: 100px;
+        }
+        .plot-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .explanation {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .metric-box {
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+        .metric-box h3 {
+            margin-top: 0;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Visualização da Diferença: Bola de Finsler vs Círculo Euclidiano</h1>
+        
+        <div class="explanation">
+            <h3>Por que as bolas de Finsler não são círculos?</h3>
+            <p>A métrica de Finsler tem propriedades especiais que a tornam diferente da métrica euclidiana:</p>
+            <ul>
+                <li><strong>Assimetria:</strong> d(p,q) ≠ d(q,p) devido ao termo linear</li>
+                <li><strong>Dependência do ponto:</strong> A forma da bola muda com a posição do centro</li>
+                <li><strong>Anisotropia:</strong> Diferentes direções têm "custos" diferentes</li>
+            </ul>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="centerX">Centro X:</label>
+                <input type="range" id="centerX" min="-2" max="2" step="0.1" value="1" oninput="updateCenter()">
+                <span id="centerXValue">1</span>
+            </div>
+            <div class="control-group">
+                <label for="centerY">Centro Y:</label>
+                <input type="range" id="centerY" min="-2" max="2" step="0.1" value="0.5" oninput="updateCenter()">
+                <span id="centerYValue">0.5</span>
+            </div>
+            <div class="control-group">
+                <label for="alpha">α:</label>
+                <input type="range" id="alpha" min="1.1" max="5" step="0.1" value="2" oninput="updatePlots()">
+                <span id="alphaValue">2</span>
+            </div>
+            <div class="control-group">
+                <label for="epsilon">ε:</label>
+                <input type="range" id="epsilon" min="0.2" max="2" step="0.1" value="1" oninput="updatePlots()">
+                <span id="epsilonValue">1</span>
+            </div>
+        </div>
+        
+        <div class="plot-grid">
+            <div id="plotFinsler"></div>
+            <div id="plotComparison"></div>
+        </div>
+        
+        <div class="metrics">
+            <div class="metric-box">
+                <h3>Métrica de Finsler</h3>
+                <p><strong>Fórmula:</strong></p>
+                <p style="font-family: monospace; font-size: 12px;">
+                    d(p,q) = [Σ f(pᵢ)|qᵢ-pᵢ|^α]^(1/α) + Σ g(α,pᵢ)f(pᵢ)^(1/α)(qᵢ-pᵢ)
+                </p>
+                <p><strong>Características:</strong></p>
+                <ul>
+                    <li>Assimétrica: d(p,q) ≠ d(q,p)</li>
+                    <li>Forma variável com a posição</li>
+                    <li>Sensível à direção</li>
+                </ul>
+            </div>
+            <div class="metric-box">
+                <h3>Métrica Euclidiana</h3>
+                <p><strong>Fórmula:</strong></p>
+                <p style="font-family: monospace; font-size: 12px;">
+                    d(p,q) = √[Σ (qᵢ-pᵢ)²]
+                </p>
+                <p><strong>Características:</strong></p>
+                <ul>
+                    <li>Simétrica: d(p,q) = d(q,p)</li>
+                    <li>Sempre circular/esférica</li>
+                    <li>Isotrópica (todas direções iguais)</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div id="distanceInfo"></div>
+    </div>
+
+    <script>
+        // Funções da métrica de Finsler
+        function normBeta(alpha, ref) {
+            const beta = alpha / (alpha - 1);
+            let sum = 0;
+            for (let i = 0; i < ref.length; i++) {
+                sum += Math.pow(Math.abs(ref[i]), beta);
+            }
+            return Math.pow(sum, 1/beta);
+        }
+        
+        function gRef(alpha, ref) {
+            const normaBeta = normBeta(alpha, ref);
+            const g = ref.map(x => x / (normaBeta + 1));
+            return normBeta(alpha, g);
+        }
+        
+        function fRef(ref) {
+            return ref.map(x => x * x);
+        }
+        
+        function finslerMetric(p, q, alpha) {
+            const diff = [];
+            for (let i = 0; i < p.length; i++) {
+                diff.push(Math.abs(q[i] - p[i]));
+            }
+            
+            const f = fRef(p);
+            const g = gRef(alpha, p);
+            
+            // Primeiro termo
+            let term1Sum = 0;
+            for (let i = 0; i < p.length; i++) {
+                term1Sum += f[i] * Math.pow(diff[i], alpha);
+            }
+            const term1 = Math.pow(term1Sum, 1/alpha);
+            
+            // Segundo termo
+            let term2 = 0;
+            for (let i = 0; i < p.length; i++) {
+                term2 += g * Math.pow(f[i], 1/alpha) * (q[i] - p[i]);
+            }
+            
+            return term1 + term2;
+        }
+        
+        function euclideanMetric(p, q) {
+            let sum = 0;
+            for (let i = 0; i < p.length; i++) {
+                sum += Math.pow(q[i] - p[i], 2);
+            }
+            return Math.sqrt(sum);
+        }
+        
+        function computeFinslerBall(center, epsilon, alpha, numPoints = 100) {
+            const angles = [];
+            const radii = [];
+            const x = [];
+            const y = [];
+            
+            for (let i = 0; i <= numPoints; i++) {
+                const angle = (2 * Math.PI * i) / numPoints;
+                angles.push(angle);
+                
+                // Busca binária para encontrar o raio nesta direção
+                let rMin = 0;
+                let rMax = epsilon * 5;
+                let r = epsilon;
+                
+                for (let iter = 0; iter < 30; iter++) {
+                    r = (rMin + rMax) / 2;
+                    const testPoint = [
+                        center[0] + r * Math.cos(angle),
+                        center[1] + r * Math.sin(angle)
+                    ];
+                    
+                    const dist = finslerMetric(center, testPoint, alpha);
+                    
+                    if (Math.abs(dist - epsilon) < 0.001) {
+                        break;
+                    } else if (dist < epsilon) {
+                        rMin = r;
+                    } else {
+                        rMax = r;
+                    }
+                }
+                
+                radii.push(r);
+                x.push(center[0] + r * Math.cos(angle));
+                y.push(center[1] + r * Math.sin(angle));
+            }
+            
+            return { x, y, radii, angles };
+        }
+        
+        function updateCenter() {
+            document.getElementById('centerXValue').textContent = document.getElementById('centerX').value;
+            document.getElementById('centerYValue').textContent = document.getElementById('centerY').value;
+            updatePlots();
+        }
+        
+        function updatePlots() {
+            const centerX = parseFloat(document.getElementById('centerX').value);
+            const centerY = parseFloat(document.getElementById('centerY').value);
+            const alpha = parseFloat(document.getElementById('alpha').value);
+            const epsilon = parseFloat(document.getElementById('epsilon').value);
+            
+            document.getElementById('alphaValue').textContent = alpha;
+            document.getElementById('epsilonValue').textContent = epsilon;
+            
+            const center = [centerX, centerY];
+            
+            // Calcular a bola de Finsler
+            const finslerBall = computeFinslerBall(center, epsilon, alpha);
+            
+            // Gráfico 1: Apenas a bola de Finsler
+            const trace1 = {
+                x: finslerBall.x,
+                y: finslerBall.y,
+                mode: 'lines',
+                name: 'Bola de Finsler',
+                line: { color: 'blue', width: 3 },
+                fill: 'toself',
+                fillcolor: 'rgba(0, 0, 255, 0.1)'
+            };
+            
+            const trace1Center = {
+                x: [centerX],
+                y: [centerY],
+                mode: 'markers+text',
+                name: 'Centro',
+                marker: { size: 10, color: 'red' },
+                text: [`(${centerX}, ${centerY})`],
+                textposition: 'top'
+            };
+            
+            // Adicionar vetores mostrando assimetria
+            const directions = [];
+            for (let angle = 0; angle < 2 * Math.PI; angle += Math.PI / 4) {
+                const idx = Math.floor(angle / (2 * Math.PI) * finslerBall.radii.length);
+                const r = finslerBall.radii[idx];
+                directions.push({
+                    x: [centerX, centerX + r * Math.cos(angle)],
+                    y: [centerY, centerY + r * Math.sin(angle)],
+                    mode: 'lines+markers',
+                    line: { color: 'rgba(100, 100, 100, 0.5)', width: 1 },
+                    marker: { size: 4 },
+                    showlegend: false
+                });
+            }
+            
+            const layout1 = {
+                title: 'Bola de Finsler B(p, ε)',
+                xaxis: { 
+                    title: 'X',
+                    scaleanchor: 'y',
+                    range: [centerX - epsilon * 2, centerX + epsilon * 2]
+                },
+                yaxis: { 
+                    title: 'Y',
+                    range: [centerY - epsilon * 2, centerY + epsilon * 2]
+                },
+                height: 400
+            };
+            
+            Plotly.newPlot('plotFinsler', [trace1, trace1Center, ...directions], layout1);
+            
+            // Gráfico 2: Comparação
+            const euclideanX = [];
+            const euclideanY = [];
+            for (let angle = 0; angle <= 2 * Math.PI; angle += 0.1) {
+                euclideanX.push(centerX + epsilon * Math.cos(angle));
+                euclideanY.push(centerY + epsilon * Math.sin(angle));
+            }
+            
+            const trace2Finsler = {
+                x: finslerBall.x,
+                y: finslerBall.y,
+                mode: 'lines',
+                name: 'Bola de Finsler',
+                line: { color: 'blue', width: 3 }
+            };
+            
+            const trace2Euclidean = {
+                x: euclideanX,
+                y: euclideanY,
+                mode: 'lines',
+                name: 'Círculo Euclidiano',
+                line: { color: 'green', width: 2, dash: 'dash' }
+            };
+            
+            const trace2Center = {
+                x: [centerX],
+                y: [centerY],
+                mode: 'markers',
+                name: 'Centro',
+                marker: { size: 10, color: 'red' }
+            };
+            
+            const layout2 = {
+                title: 'Comparação: Finsler vs Euclidiano',
+                xaxis: { 
+                    title: 'X',
+                    scaleanchor: 'y',
+                    range: [centerX - epsilon * 2, centerX + epsilon * 2]
+                },
+                yaxis: { 
+                    title: 'Y',
+                    range: [centerY - epsilon * 2, centerY + epsilon * 2]
+                },
+                height: 400
+            };
+            
+            Plotly.newPlot('plotComparison', [trace2Finsler, trace2Euclidean, trace2Center], layout2);
+            
+            // Mostrar informações sobre distâncias
+            updateDistanceInfo(center, epsilon, alpha);
+        }
+        
+        function updateDistanceInfo(center, epsilon, alpha) {
+            const testPoints = [
+                { name: 'Direita', point: [center[0] + epsilon, center[1]] },
+                { name: 'Esquerda', point: [center[0] - epsilon, center[1]] },
+                { name: 'Cima', point: [center[0], center[1] + epsilon] },
+                { name: 'Baixo', point: [center[0], center[1] - epsilon] }
+            ];
+            
+            let html = '<h3>Distâncias em diferentes direções (raio = ε = ' + epsilon + ')</h3>';
+            html += '<table style="width: 100%; border-collapse: collapse;">';
+            html += '<tr><th>Direção</th><th>Ponto</th><th>d_Finsler(centro, ponto)</th><th>d_Euclidiana</th><th>Diferença</th></tr>';
+            
+            testPoints.forEach(({name, point}) => {
+                const dFinsler = finslerMetric(center, point, alpha);
+                const dEuclidean = euclideanMetric(center, point);
+                const diff = ((dFinsler - dEuclidean) / dEuclidean * 100).toFixed(1);
+                
+                html += `<tr>`;
+                html += `<td>${name}</td>`;
+                html += `<td>(${point[0].toFixed(2)}, ${point[1].toFixed(2)})</td>`;
+                html += `<td>${dFinsler.toFixed(3)}</td>`;
+                html += `<td>${dEuclidean.toFixed(3)}</td>`;
+                html += `<td>${diff > 0 ? '+' : ''}${diff}%</td>`;
+                html += `</tr>`;
+            });
+            
+            html += '</table>';
+            
+            html += '<p><strong>Observe:</strong> As distâncias de Finsler variam com a direção, enquanto as euclidianas são sempre iguais!</p>';
+            
+            document.getElementById('distanceInfo').innerHTML = html;
+        }
+        
+        // Inicializar
+        updatePlots();
+    </script>
+</body>
+</html>

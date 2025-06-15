@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia para Plotar Bola de Finsler no Papel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .calculation-box {
+            background-color: #f0f8ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .highlight {
+            background-color: #ffeb3b;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .grid-paper {
+            background-image: 
+                repeating-linear-gradient(#ccc 0 1px, transparent 1px 100%),
+                repeating-linear-gradient(90deg, #ccc 0 1px, transparent 1px 100%);
+            background-size: 20px 20px;
+            width: 100%;
+            height: 400px;
+            position: relative;
+            border: 2px solid #333;
+            margin: 20px 0;
+        }
+        .point {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: red;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .label {
+            position: absolute;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        svg {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #ddd;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Guia Prático: Plotando uma Bola de Finsler no Papel</h1>
+        
+        <h2>Exemplo Simplificado para Cálculo Manual</h2>
+        
+        <div class="calculation-box">
+            <strong>Configuração:</strong><br>
+            • Centro: p = (2, 0)<br>
+            • Raio: ε = 2<br>
+            • α = 2<br>
+            • f(x) = x² (função peso)<br>
+        </div>
+        
+        <h2>📊 Passo 1: Calcular g(α, p)</h2>
+        <div class="calculation-box">
+            f(2) = 2² = 4<br>
+            f(0) = 0² = 0<br>
+            <br>
+            norm_beta = √(2² + 0²) = 2<br>
+            g ≈ 0.5 (após cálculos)
+        </div>
+        
+        <h2>📐 Passo 2: Fórmula da Distância</h2>
+        <div class="calculation-box">
+            Para q = (x, y):<br>
+            <span class="highlight">d(p,q) = √[4(x-2)²] + 0.5 × 2 × (x-2)</span><br>
+            d(p,q) = 2|x-2| + (x-2)
+        </div>
+        
+        <h2>🔍 Passo 3: Análise por Direção</h2>
+        
+        <h3>➡️ Direção Positiva (x > 2):</h3>
+        <div class="calculation-box">
+            |x-2| = x-2<br>
+            d(p,q) = 2(x-2) + (x-2) = 3(x-2)<br>
+            <br>
+            Para d < 2: 3(x-2) < 2<br>
+            x-2 < 2/3<br>
+            <strong>x < 2.67</strong>
+        </div>
+        
+        <h3>⬅️ Direção Negativa (x < 2):</h3>
+        <div class="calculation-box">
+            |x-2| = 2-x<br>
+            d(p,q) = 2(2-x) + (x-2) = 4-2x + x-2 = 2-x<br>
+            <br>
+            Para d < 2: 2-x < 2<br>
+            -x < 0<br>
+            <strong>x > 0</strong>
+        </div>
+        
+        <h2>📋 Tabela de Pontos Calculados</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Ponto (x,y)</th>
+                    <th>Distância Euclidiana</th>
+                    <th>Distância de Finsler</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>(2.67, 0)</td>
+                    <td>0.67</td>
+                    <td>2.0</td>
+                    <td style="background-color: #ffeb3b;">Fronteira direita</td>
+                </tr>
+                <tr>
+                    <td>(3, 0)</td>
+                    <td>1.0</td>
+                    <td>3.0</td>
+                    <td style="background-color: #ffcdd2;">Fora da bola</td>
+                </tr>
+                <tr>
+                    <td>(1, 0)</td>
+                    <td>1.0</td>
+                    <td>1.0</td>
+                    <td style="background-color: #c8e6c9;">Dentro da bola</td>
+                </tr>
+                <tr>
+                    <td>(0, 0)</td>
+                    <td>2.0</td>
+                    <td>2.0</td>
+                    <td style="background-color: #ffeb3b;">Fronteira esquerda</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h2>🎨 Comparação Visual</h2>
+        <svg viewBox="-50 -150 400 300">
+            <!-- Grade -->
+            <defs>
+                <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e0e0e0" stroke-width="1"/>
+                </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)" />
+            
+            <!-- Eixos -->
+            <line x1="0" y1="0" x2="300" y2="0" stroke="black" stroke-width="2"/>
+            <line x1="150" y1="-150" x2="150" y2="150" stroke="black" stroke-width="2"/>
+            
+            <!-- Escala -->
+            <text x="50" y="15" font-size="12">0</text>
+            <text x="100" y="15" font-size="12">1</text>
+            <text x="150" y="15" font-size="12">2</text>
+            <text x="200" y="15" font-size="12">3</text>
+            <text x="250" y="15" font-size="12">4</text>
+            
+            <!-- Centro -->
+            <circle cx="150" cy="0" r="5" fill="red"/>
+            <text x="155" y="-10" font-size="14" font-weight="bold">p=(2,0)</text>
+            
+            <!-- Círculo Euclidiano (raio = 2) -->
+            <circle cx="150" cy="0" r="100" fill="none" stroke="green" stroke-width="2" stroke-dasharray="5,5"/>
+            <text x="80" y="-110" font-size="12" fill="green">Círculo Euclidiano</text>
+            
+            <!-- Bola de Finsler -->
+            <ellipse cx="100" cy="0" rx="83.5" ry="60" fill="rgba(0,0,255,0.1)" stroke="blue" stroke-width="3"/>
+            <text x="60" y="80" font-size="12" fill="blue">Bola de Finsler</text>
+            
+            <!-- Pontos importantes -->
+            <circle cx="50" cy="0" r="4" fill="blue"/>
+            <text x="35" y="20" font-size="10">x=0</text>
+            
+            <circle cx="183.5" cy="0" r="4" fill="blue"/>
+            <text x="170" y="20" font-size="10">x=2.67</text>
+            
+            <!-- Raios -->
+            <line x1="150" y1="0" x2="50" y2="0" stroke="red" stroke-width="1"/>
+            <text x="90" y="-5" font-size="10" fill="red">r=2</text>
+            
+            <line x1="150" y1="0" x2="183.5" y2="0" stroke="red" stroke-width="1"/>
+            <text x="160" y="-5" font-size="10" fill="red">r=0.67</text>
+        </svg>
+        
+        <h2>🔑 Observações Importantes</h2>
+        <div class="calculation-box" style="background-color: #fff3cd;">
+            <strong>ASSIMETRIA CLARA:</strong><br>
+            • Raio à esquerda: 2 unidades (do centro até x=0)<br>
+            • Raio à direita: 0.67 unidades (do centro até x=2.67)<br>
+            • <span class="highlight">A bola é 3 vezes maior à esquerda!</span><br>
+            <br>
+            <strong>POR QUÊ?</strong><br>
+            O termo linear (x-2) na métrica:<br>
+            • Adiciona distância quando x > 2 (penaliza ir para direita)<br>
+            • Subtrai distância quando x < 2 (facilita ir para esquerda)
+        </div>
+        
+        <h2>📝 Instruções para Plotar no Papel</h2>
+        <ol>
+            <li>Desenhe um sistema de coordenadas com origem em (0,0)</li>
+            <li>Marque o centro p = (2,0) com um ponto vermelho</li>
+            <li>Marque x = 0 (fronteira esquerda) e x = 2.67 (fronteira direita)</li>
+            <li>Desenhe uma elipse conectando esses pontos</li>
+            <li>Para comparação, desenhe um círculo de raio 2 centrado em p</li>
+            <li>Note como a bola de Finsler é "achatada" à direita e "expandida" à esquerda</li>
+        </ol>
+        
+        <h2>💡 Verificação Rápida</h2>
+        <div class="calculation-box">
+            Teste: Pontos A=(1,0) e B=(3,0) estão ambos a 1 unidade euclidiana de p=(2,0)<br>
+            <br>
+            d_Finsler(p,A) = 2|1-2| + (1-2) = 2(1) - 1 = <strong>1</strong> ✓ Dentro!<br>
+            d_Finsler(p,B) = 2|3-2| + (3-2) = 2(1) + 1 = <strong>3</strong> ✗ Fora!<br>
+            <br>
+            Mesma distância euclidiana, mas distâncias de Finsler muito diferentes!
+        </div>
+    </div>
+</body>
+</html>

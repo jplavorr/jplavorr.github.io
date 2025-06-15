@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bolas de Finsler no R^10</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        .control-group {
+            margin: 10px 0;
+        }
+        label {
+            display: inline-block;
+            width: 150px;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            width: 100px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .tab-container {
+            margin: 20px 0;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #ddd;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            margin-right: 5px;
+            border-radius: 5px 5px 0 0;
+        }
+        .tab.active {
+            background-color: white;
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-top: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        #plot2d, #plot3d {
+            margin: 20px 0;
+        }
+        .info {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .seed-info {
+            background-color: #fff3cd;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Simulação de Bolas de Finsler no R^10</h1>
+        
+        <div class="info">
+            <h3>Sobre a Métrica de Finsler</h3>
+            <p>Esta simulação visualiza bolas no R^10 usando uma métrica de Finsler generalizada.</p>
+            <p>A métrica é composta por dois termos: uma norma L^α ponderada e um termo de correção.</p>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="seed">Seed (semente):</label>
+                <input type="number" id="seed" value="42" min="1">
+                <span style="font-size: 12px; color: #666;">Use o mesmo seed para reproduzir os mesmos pontos</span>
+            </div>
+            <div class="control-group">
+                <label for="alpha">Parâmetro α:</label>
+                <input type="number" id="alpha" value="2" min="1.1" step="0.1">
+            </div>
+            <div class="control-group">
+                <label for="epsilon">Raio ε:</label>
+                <input type="number" id="epsilon" value="0.5" min="0.1" step="0.1">
+            </div>
+            <div class="control-group">
+                <label for="numPoints">Número de pontos:</label>
+                <input type="number" id="numPoints" value="10" min="2" max="20">
+            </div>
+            <div class="control-group">
+                <label for="showEuclidean">
+                    <input type="checkbox" id="showEuclidean" onchange="updateVisualization()">
+                    Mostrar círculos euclidianos para comparação
+                </label>
+            </div>
+            <button onclick="generateSimulation()">Gerar Nova Simulação</button>
+            <button onclick="updateVisualization()">Atualizar Visualização</button>
+        </div>
+        
+        <div class="seed-info" id="seedInfo"></div>
+        
+        <div class="tab-container">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('2d')">Visualização 2D</div>
+                <div class="tab" onclick="switchTab('3d')">Visualização 3D</div>
+                <div class="tab" onclick="switchTab('matrix')">Matriz de Distâncias</div>
+            </div>
+            
+            <div id="2d-content" class="tab-content active">
+                <div id="plot2d"></div>
+            </div>
+            
+            <div id="3d-content" class="tab-content">
+                <div id="plot3d"></div>
+            </div>
+            
+            <div id="matrix-content" class="tab-content">
+                <div id="distanceMatrix"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let points = [];
+        let distances = [];
+        let currentTab = '2d';
+        
+        // Implementação de um gerador de números pseudo-aleatórios com seed
+        class SeededRandom {
+            constructor(seed) {
+                this.seed = seed;
+            }
+            
+            next() {
+                this.seed = (this.seed * 1664525 + 1013904223) % 4294967296;
+                return this.seed / 4294967296;
+            }
+        }
+        
+        // Implementação das funções auxiliares
+        function normBeta(alpha, ref) {
+            const beta = alpha / (alpha - 1);
+            let sum = 0;
+            for (let i = 0; i < ref.length; i++) {
+                sum += Math.pow(Math.abs(ref[i]), beta);
+            }
+            return Math.pow(sum, 1/beta);
+        }
+        
+        function gRef(alpha, ref) {
+            const normaBeta = normBeta(alpha, ref);
+            const g = ref.map(x => x / (normaBeta + 1));
+            return normBeta(alpha, g);
+        }
+        
+        function fRef(ref) {
+            return ref.map(x => x * x);
+        }
+        
+        function finslerMetric(p, q, alpha) {
+            const diff = [];
+            for (let i = 0; i < p.length; i++) {
+                diff.push(Math.abs(q[i] - p[i]));
+            }
+            
+            const f = fRef(p);
+            const g = gRef(alpha, p);
+            
+            // Primeiro termo
+            let term1Sum = 0;
+            for (let i = 0; i < p.length; i++) {
+                term1Sum += f[i] * Math.pow(diff[i], alpha);
+            }
+            const term1 = Math.pow(term1Sum, 1/alpha);
+            
+            // Segundo termo
+            let term2 = 0;
+            for (let i = 0; i < p.length; i++) {
+                term2 += g * Math.pow(f[i], 1/alpha) * (q[i] - p[i]);
+            }
+            
+            return term1 + term2;
+        }
+        
+        function generateRandomPoints(n, dim, seed) {
+            const rng = new SeededRandom(seed);
+            const points = [];
+            
+            for (let i = 0; i < n; i++) {
+                const point = [];
+                for (let j = 0; j < dim; j++) {
+                    point.push(rng.next() * 2 - 1); // Valores entre -1 e 1
+                }
+                points.push(point);
+            }
+            return points;
+        }
+        
+        function calculateDistanceMatrix(points, alpha) {
+            const n = points.length;
+            const matrix = [];
+            
+            for (let i = 0; i < n; i++) {
+                const row = [];
+                for (let j = 0; j < n; j++) {
+                    if (i === j) {
+                        row.push(0);
+                    } else {
+                        const dist = finslerMetric(points[i], points[j], alpha);
+                        row.push(dist);
+                    }
+                }
+                matrix.push(row);
+            }
+            return matrix;
+        }
+        
+        function projectToLowerDim(points, distances, targetDim) {
+            const n = points.length;
+            const positions = [];
+            
+            // Inicializar posições aleatórias
+            const rng = new SeededRandom(123); // Seed fixo para projeção consistente
+            for (let i = 0; i < n; i++) {
+                const pos = [];
+                for (let d = 0; d < targetDim; d++) {
+                    pos.push(rng.next() * 10);
+                }
+                positions.push(pos);
+            }
+            
+            // MDS simplificado: ajustar posições baseadas nas distâncias
+            for (let iter = 0; iter < 200; iter++) {
+                for (let i = 0; i < n; i++) {
+                    for (let j = i + 1; j < n; j++) {
+                        const targetDist = distances[i][j];
+                        
+                        let currentDistSq = 0;
+                        const diff = [];
+                        for (let d = 0; d < targetDim; d++) {
+                            const delta = positions[j][d] - positions[i][d];
+                            diff.push(delta);
+                            currentDistSq += delta * delta;
+                        }
+                        const currentDist = Math.sqrt(currentDistSq);
+                        
+                        if (currentDist > 0) {
+                            const factor = (targetDist - currentDist) / currentDist * 0.05;
+                            for (let d = 0; d < targetDim; d++) {
+                                positions[i][d] -= diff[d] * factor;
+                                positions[j][d] += diff[d] * factor;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return positions;
+        }
+        
+        function switchTab(tab) {
+            // Remover active de todas as abas
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            // Adicionar active na aba selecionada
+            event.target.classList.add('active');
+            document.getElementById(`${tab}-content`).classList.add('active');
+            
+            currentTab = tab;
+            
+            if (tab === 'matrix' && distances.length > 0) {
+                displayDistanceMatrix();
+            }
+        }
+        
+        function generateSimulation() {
+            const numPoints = parseInt(document.getElementById('numPoints').value);
+            const alpha = parseFloat(document.getElementById('alpha').value);
+            const seed = parseInt(document.getElementById('seed').value);
+            
+            // Gerar pontos aleatórios no R^10 com seed
+            points = generateRandomPoints(numPoints, 10, seed);
+            
+            // Calcular matriz de distâncias
+            distances = calculateDistanceMatrix(points, alpha);
+            
+            // Mostrar informação do seed
+            document.getElementById('seedInfo').innerHTML = 
+                `Seed atual: ${seed} | Pontos gerados: ${numPoints} | Dimensão: R^10`;
+            
+            updateVisualization();
+        }
+        
+        function updateVisualization() {
+            const epsilon = parseFloat(document.getElementById('epsilon').value);
+            const alpha = parseFloat(document.getElementById('alpha').value);
+            
+            if (points.length === 0) {
+                generateSimulation();
+                return;
+            }
+            
+            // Atualizar visualização 2D
+            update2DVisualization(epsilon, alpha);
+            
+            // Atualizar visualização 3D
+            update3DVisualization(epsilon, alpha);
+            
+            // Atualizar matriz se estiver visível
+            if (currentTab === 'matrix') {
+                displayDistanceMatrix();
+            }
+        }
+        
+        function update2DVisualization(epsilon, alpha) {
+            // Projetar pontos em 2D
+            const positions2D = projectToLowerDim(points, distances, 2);
+            
+            const traces = [];
+            
+            // Adicionar pontos
+            traces.push({
+                x: positions2D.map(p => p[0]),
+                y: positions2D.map(p => p[1]),
+                mode: 'markers+text',
+                type: 'scatter',
+                text: positions2D.map((_, i) => `P${i}`),
+                textposition: 'top center',
+                marker: {
+                    size: 12,
+                    color: 'blue'
+                },
+                name: 'Pontos'
+            });
+            
+            // Adicionar as verdadeiras bolas de Finsler
+            for (let i = 0; i < points.length; i++) {
+                const ballPoints = computeFinslerBall2D(i, epsilon, alpha, positions2D);
+                
+                traces.push({
+                    x: ballPoints.x,
+                    y: ballPoints.y,
+                    mode: 'lines',
+                    type: 'scatter',
+                    line: {
+                        color: `hsl(${i * 360 / points.length}, 70%, 50%)`,
+                        width: 2
+                    },
+                    name: `B(P${i}, ε=${epsilon})`,
+                    showlegend: i < 5,
+                    fill: 'toself',
+                    fillcolor: `hsla(${i * 360 / points.length}, 70%, 50%, 0.1)`
+                });
+            }
+            
+            // Adicionar círculos euclidianos para comparação (linha pontilhada)
+            if (document.getElementById('showEuclidean') && document.getElementById('showEuclidean').checked) {
+                for (let i = 0; i < Math.min(3, points.length); i++) {
+                    const theta = [];
+                    for (let angle = 0; angle <= 2 * Math.PI; angle += 0.1) {
+                        theta.push(angle);
+                    }
+                    
+                    const x = theta.map(angle => positions2D[i][0] + epsilon * Math.cos(angle));
+                    const y = theta.map(angle => positions2D[i][1] + epsilon * Math.sin(angle));
+                    
+                    traces.push({
+                        x: x,
+                        y: y,
+                        mode: 'lines',
+                        type: 'scatter',
+                        line: {
+                            color: 'gray',
+                            width: 1,
+                            dash: 'dot'
+                        },
+                        name: `Círculo Euclidiano P${i}`,
+                        showlegend: false
+                    });
+                }
+            }
+            
+            const layout = {
+                title: `Projeção 2D - Bolas de Finsler com α=${alpha} e ε=${epsilon}`,
+                xaxis: {
+                    title: 'Projeção X',
+                    scaleanchor: 'y'
+                },
+                yaxis: {
+                    title: 'Projeção Y'
+                },
+                height: 600,
+                showlegend: true
+            };
+            
+            Plotly.newPlot('plot2d', traces, layout);
+        }
+        
+        function computeFinslerBall2D(centerIndex, epsilon, alpha, positions2D) {
+            const center = positions2D[centerIndex];
+            const centerPoint = points[centerIndex];
+            
+            const xPoints = [];
+            const yPoints = [];
+            
+            // Varrer ângulos para encontrar os pontos na fronteira da bola
+            for (let angle = 0; angle <= 2 * Math.PI; angle += 0.05) {
+                // Busca binária para encontrar o raio nesta direção
+                let rMin = 0;
+                let rMax = epsilon * 3; // Margem de segurança
+                let r = epsilon;
+                
+                for (let iter = 0; iter < 20; iter++) {
+                    r = (rMin + rMax) / 2;
+                    
+                    // Criar ponto teste na projeção 2D
+                    const testPoint2D = [
+                        center[0] + r * Math.cos(angle),
+                        center[1] + r * Math.sin(angle)
+                    ];
+                    
+                    // Encontrar o ponto mais próximo no espaço original
+                    // Isso é uma aproximação - idealmente, precisaríamos inverter a projeção
+                    let minDist = Infinity;
+                    let closestPointIndex = -1;
+                    
+                    // Para esta demonstração, vamos interpolar no espaço 2D
+                    // e calcular a distância de Finsler aproximada
+                    const direction = [Math.cos(angle), Math.sin(angle)];
+                    const testPoint10D = [...centerPoint]; // Começar com o ponto central
+                    
+                    // Aproximar o ponto no R^10 baseado na direção 2D
+                    for (let d = 0; d < 10; d++) {
+                        if (d < 2) {
+                            testPoint10D[d] += r * direction[d] * 0.3; // Fator de escala
+                        }
+                    }
+                    
+                    const dist = finslerMetric(centerPoint, testPoint10D, alpha);
+                    
+                    if (dist < epsilon) {
+                        rMin = r;
+                    } else {
+                        rMax = r;
+                    }
+                }
+                
+                xPoints.push(center[0] + r * Math.cos(angle));
+                yPoints.push(center[1] + r * Math.sin(angle));
+            }
+            
+            return { x: xPoints, y: yPoints };
+        }
+        
+        function update3DVisualization(epsilon, alpha) {
+            // Projetar pontos em 3D
+            const positions3D = projectToLowerDim(points, distances, 3);
+            
+            const traces = [];
+            
+            // Adicionar pontos
+            traces.push({
+                x: positions3D.map(p => p[0]),
+                y: positions3D.map(p => p[1]),
+                z: positions3D.map(p => p[2]),
+                mode: 'markers+text',
+                type: 'scatter3d',
+                text: positions3D.map((_, i) => `P${i}`),
+                marker: {
+                    size: 8,
+                    color: 'blue'
+                },
+                name: 'Pontos'
+            });
+            
+            // Adicionar as verdadeiras bolas de Finsler em 3D
+            for (let i = 0; i < points.length; i++) {
+                const ballMesh = computeFinslerBall3D(i, epsilon, alpha, positions3D);
+                
+                traces.push({
+                    x: ballMesh.x,
+                    y: ballMesh.y,
+                    z: ballMesh.z,
+                    i: ballMesh.i,
+                    j: ballMesh.j,
+                    k: ballMesh.k,
+                    type: 'mesh3d',
+                    color: `hsl(${i * 360 / points.length}, 70%, 50%)`,
+                    opacity: 0.6,
+                    name: `B(P${i})`,
+                    showlegend: i < 5
+                });
+            }
+            
+            // Adicionar esferas euclidianas para comparação (se ativado)
+            if (document.getElementById('showEuclidean') && document.getElementById('showEuclidean').checked) {
+                for (let i = 0; i < Math.min(3, points.length); i++) {
+                    const spherePoints = [];
+                    
+                    // Criar uma esfera wireframe para comparação
+                    for (let phi = 0; phi <= Math.PI; phi += Math.PI/8) {
+                        const xRow = [];
+                        const yRow = [];
+                        const zRow = [];
+                        
+                        for (let theta = 0; theta <= 2*Math.PI; theta += Math.PI/8) {
+                            xRow.push(positions3D[i][0] + epsilon * Math.sin(phi) * Math.cos(theta));
+                            yRow.push(positions3D[i][1] + epsilon * Math.sin(phi) * Math.sin(theta));
+                            zRow.push(positions3D[i][2] + epsilon * Math.cos(phi));
+                        }
+                        
+                        if (phi % (Math.PI/4) === 0) { // Apenas algumas linhas de latitude
+                            traces.push({
+                                x: xRow,
+                                y: yRow,
+                                z: zRow,
+                                mode: 'lines',
+                                type: 'scatter3d',
+                                line: {
+                                    color: 'gray',
+                                    width: 2
+                                },
+                                showlegend: false
+                            });
+                        }
+                    }
+                    
+                    // Adicionar algumas linhas de longitude
+                    for (let theta = 0; theta < 2*Math.PI; theta += Math.PI/4) {
+                        const xLon = [];
+                        const yLon = [];
+                        const zLon = [];
+                        
+                        for (let phi = 0; phi <= Math.PI; phi += Math.PI/16) {
+                            xLon.push(positions3D[i][0] + epsilon * Math.sin(phi) * Math.cos(theta));
+                            yLon.push(positions3D[i][1] + epsilon * Math.sin(phi) * Math.sin(theta));
+                            zLon.push(positions3D[i][2] + epsilon * Math.cos(phi));
+                        }
+                        
+                        traces.push({
+                            x: xLon,
+                            y: yLon,
+                            z: zLon,
+                            mode: 'lines',
+                            type: 'scatter3d',
+                            line: {
+                                color: 'gray',
+                                width: 1,
+                                dash: 'dot'
+                            },
+                            showlegend: false
+                        });
+                    }
+                }
+            }
+            
+            const layout = {
+                title: `Projeção 3D - Bolas de Finsler com α=${alpha} e ε=${epsilon}`,
+                scene: {
+                    xaxis: {title: 'Projeção X'},
+                    yaxis: {title: 'Projeção Y'},
+                    zaxis: {title: 'Projeção Z'},
+                    aspectmode: 'cube'
+                },
+                height: 600
+            };
+            
+            Plotly.newPlot('plot3d', traces, layout);
+        }
+        
+        function computeFinslerBall3D(centerIndex, epsilon, alpha, positions3D) {
+            const center = positions3D[centerIndex];
+            const centerPoint = points[centerIndex];
+            
+            // Criar uma malha de pontos na superfície da bola
+            const vertices = [];
+            const faces = [];
+            
+            // Parâmetros para a malha
+            const nPhi = 20;    // Divisões em phi (latitude)
+            const nTheta = 20;  // Divisões em theta (longitude)
+            
+            // Gerar vértices
+            for (let iPhi = 0; iPhi <= nPhi; iPhi++) {
+                const phi = (iPhi / nPhi) * Math.PI;
+                
+                for (let iTheta = 0; iTheta <= nTheta; iTheta++) {
+                    const theta = (iTheta / nTheta) * 2 * Math.PI;
+                    
+                    // Direção no espaço 3D
+                    const direction = [
+                        Math.sin(phi) * Math.cos(theta),
+                        Math.sin(phi) * Math.sin(theta),
+                        Math.cos(phi)
+                    ];
+                    
+                    // Busca binária para encontrar o raio nesta direção
+                    let rMin = 0;
+                    let rMax = epsilon * 3;
+                    let r = epsilon;
+                    
+                    for (let iter = 0; iter < 20; iter++) {
+                        r = (rMin + rMax) / 2;
+                        
+                        // Criar ponto teste no R^10
+                        const testPoint10D = [...centerPoint];
+                        
+                        // Mapear a direção 3D para o espaço 10D
+                        // Esta é uma aproximação - idealmente precisaríamos de uma inversão mais sofisticada
+                        for (let d = 0; d < 10; d++) {
+                            if (d < 3) {
+                                testPoint10D[d] += r * direction[d] * 0.3;
+                            } else {
+                                // Adicionar alguma variação nas outras dimensões
+                                testPoint10D[d] += r * 0.1 * Math.sin(d + theta + phi);
+                            }
+                        }
+                        
+                        const dist = finslerMetric(centerPoint, testPoint10D, alpha);
+                        
+                        if (dist < epsilon) {
+                            rMin = r;
+                        } else {
+                            rMax = r;
+                        }
+                    }
+                    
+                    // Adicionar vértice
+                    vertices.push([
+                        center[0] + r * direction[0],
+                        center[1] + r * direction[1],
+                        center[2] + r * direction[2]
+                    ]);
+                }
+            }
+            
+            // Gerar faces (triângulos)
+            for (let iPhi = 0; iPhi < nPhi; iPhi++) {
+                for (let iTheta = 0; iTheta < nTheta; iTheta++) {
+                    const i00 = iPhi * (nTheta + 1) + iTheta;
+                    const i01 = iPhi * (nTheta + 1) + (iTheta + 1);
+                    const i10 = (iPhi + 1) * (nTheta + 1) + iTheta;
+                    const i11 = (iPhi + 1) * (nTheta + 1) + (iTheta + 1);
+                    
+                    // Dois triângulos por quadrado
+                    faces.push([i00, i01, i11]);
+                    faces.push([i00, i11, i10]);
+                }
+            }
+            
+            // Preparar dados para mesh3d
+            const x = vertices.map(v => v[0]);
+            const y = vertices.map(v => v[1]);
+            const z = vertices.map(v => v[2]);
+            const i = faces.map(f => f[0]);
+            const j = faces.map(f => f[1]);
+            const k = faces.map(f => f[2]);
+            
+            return { x, y, z, i, j, k };
+        }
+        
+        function displayDistanceMatrix() {
+            const alpha = parseFloat(document.getElementById('alpha').value);
+            const epsilon = parseFloat(document.getElementById('epsilon').value);
+            
+            let html = '<h3>Matriz de Distâncias de Finsler</h3>';
+            html += '<p>Pontos em vermelho indicam d(x,y) < ε</p>';
+            html += '<table style="border-collapse: collapse; margin: 20px auto;">';
+            html += '<tr><th style="padding: 10px; border: 1px solid #ddd;"></th>';
+            
+            for (let i = 0; i < points.length; i++) {
+                html += `<th style="padding: 10px; border: 1px solid #ddd;">P${i}</th>`;
+            }
+            html += '</tr>';
+            
+            for (let i = 0; i < points.length; i++) {
+                html += `<tr><th style="padding: 10px; border: 1px solid #ddd;">P${i}</th>`;
+                for (let j = 0; j < points.length; j++) {
+                    const dist = distances[i][j];
+                    const inBall = dist < epsilon;
+                    const style = inBall ? 'background-color: #ffcccc;' : '';
+                    html += `<td style="padding: 10px; border: 1px solid #ddd; text-align: center; ${style}">${dist.toFixed(3)}</td>`;
+                }
+                html += '</tr>';
+            }
+            html += '</table>';
+            
+            document.getElementById('distanceMatrix').innerHTML = html;
+        }
+        
+        // Inicializar simulação
+        generateSimulation();
+    </script>
+</body>
+</html>
